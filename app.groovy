@@ -18,7 +18,8 @@ definition(
 
 preferences() {
     page name: "mainPage"
-    page name: "addBeacons"
+    page name: "addBeaconsPage"
+    page name: "addBeaconsStatusPage"
 }
 
 def mainPage() {
@@ -31,6 +32,10 @@ def mainPage() {
         section(){ 
             paragraph("This app uses an <a href=\"https://store.aprbrother.com/product/ab-ble-gateway-4-0\" target=\"_blank\">April Brother BLE Gateway (v4)</a> to associate beacons with Virtual Presence devices to automate events.")
 			input "gateway", "capability.presenceSensor", title: "BLE Gateway", multiple: false, required: true
+			href "addBeaconsPage",
+				title: "<b>Add New Beacon Devices</b>",
+				description: "Add New Beacon Devices."
+
             app(name: "anyOpenApp", appName: "April Brother BLE Beacon", namespace: "ajardolino3", title: "<b>Add a new Bluetooth Beacon</b>", multiple: true)
             paragraph("Gateway URL: <a href='${uri}'>${uri}</a>")
 			input "debugLog", "bool", title: "Enable debug logging", submitOnChange: true, defaultValue: false
@@ -38,13 +43,45 @@ def mainPage() {
     }
 }
 
-def addBeacons() {
+def addBeaconsPage() {
+	def newBeacons = [:]
+	state.beacons.each { beacon ->
+		def isChild = getChildDevice(beacon.value.uuid)
+		if (!isChild) {
+			newBeacons["${beacon.value.uuid}"] = "${beacon.value.uuid}"
+		}
+	}
     
-    return dynamicPage(name: "addBeacons", title: "Add Beacons", install: false) {
+    return dynamicPage(name: "addBeaconsPage", title: "Add Beacons", install: false, nextPage: addBeaconsStatusPage) {
         section(){
-            input "name", type: "text", required: true, title: "Enter Name for Gateway"
+			input ("selectedAddBeacons", "enum",
+				   required: false,
+				   multiple: true,
+				   title: "Select beacons to add (${newBeacons.size() ?: 0} new detected).\n\t" +
+				   "Total Beacons: ${state.beacons.size()}",
+				   description: "Use the dropdown to select beacons.  Then select 'Next'.",
+                   options: newBeacons)
         }
     }
+}
+
+def addBeaconsStatusPage() {
+    selectedAddBeacons.each{ beacon ->
+        logDebug("beacon: " + beacon)
+		def isChild = getChildDevice(beacon)
+		if (!isChild) {
+            addChildDevice("ajardolino3", "Bluetooth Beacon", beacon)
+        }
+    }
+	app?.removeSetting("selectedAddDevices")
+	return dynamicPage(name:"addBeaconsStatusPage",
+					   title: "Installation Status",
+					   nextPage: mainPage,
+					   install: false) {
+	 	section() {
+			paragraph "Installed"
+		}
+	}
 }
 
 private def makeUri(String extraPath) {
@@ -97,6 +134,19 @@ def postGateway() {
         }
     }
     logDebug("Beacon State AFTER Update: " + state.beacons)
+    
+	state.beacons.each { beacon ->
+        logDebug("Check Beacon: " + beacon.value.uuid)
+		def isChild = getChildDevice(beacon.value.uuid)
+		if (isChild) {
+            logDebug("Child Beacon: " + beacon.value.uuid + ", present: " + isChild.currentValue("presence"))
+            if(beacon.value.present) {
+                isChild.sendEvent(name: "presence", value: "present")
+            } else {
+                isChild.sendEvent(name: "presence", value: "not present")
+            }
+    	}
+    }
 }
 
 def createBeacon(uuid, present) {
