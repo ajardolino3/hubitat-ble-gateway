@@ -54,6 +54,7 @@ private def makeUri(String extraPath) {
 
 def installed() {
     // called when app is installed
+    state.beacons = [:]
 }
 
 def updated() {
@@ -66,10 +67,11 @@ def uninstalled() {
 
 mappings {
     // The root path - you can also map other paths or use parameters in paths and posted data
-    path("/beacons") { action: [GET: "getBeacons", POST: "postBeacons"]}
+    path("/beacons") { action: [GET: "getBeacons"]}
     path("/gateway") { action: [POST: "postGateway"] }
 }
 
+// receives incoming post requests from the gateway, sends to the gateway driver for parsing, then updates state data from parsed request
 def postGateway() {
     logDebug("POST received from Gateway: " + request.body)
     logDebug("Sending payload to device: " + gateway.name + ", payload: " + request.body)
@@ -81,7 +83,6 @@ def postGateway() {
     logDebug("Parsed payload from Gateway: " + obj)
 
     logDebug("Beacon State BEFORE Update: " + state.beacons)
-    state.beacons = [:]
     obj.beacons.each { beacon ->
         logDebug("beacon" + beacon.uuid + ", present: " + beacon.present)
         def b = state.beacons.find{ c -> c == beacon.uuid }
@@ -119,17 +120,6 @@ def getBeacons() {
     }
     
     def result = JsonOutput.toJson(obj)
-    render contentType: "application/json", data: result, status: 200
-}
-
-def postBeacons() {
-    def slurper = new JsonSlurper()
-    def obj = slurper.parseText(request.body)
-
-    def result = JsonOutput.toJson(obj)
-    state.beacons = obj
-    logDebug(state.beacons)
-
     render contentType: "application/json", data: result, status: 200
 }
 
