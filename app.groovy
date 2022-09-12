@@ -18,8 +18,9 @@ definition(
 
 preferences() {
     page name: "mainPage"
-    page name: "addBeaconsPage"
-    page name: "addBeaconsStatusPage"
+    page name: "addBeaconPage"
+    page name: "addBeaconStatusPage"
+    page name: "listBeaconsPage"
 }
 
 def mainPage() {
@@ -32,9 +33,8 @@ def mainPage() {
         section(){ 
             paragraph("This app uses an <a href=\"https://store.aprbrother.com/product/ab-ble-gateway-4-0\" target=\"_blank\">April Brother BLE Gateway (v4)</a> to associate beacons with Virtual Presence devices to automate events.")
 			input "gateway", "capability.presenceSensor", title: "BLE Gateway", multiple: false, required: true
-			href "addBeaconsPage",
-				title: "<b>Add New Beacon Devices</b>",
-				description: "Add New Beacon Devices."
+			href "addBeaconPage", title: "<b>Add New Beacon Devices</b>", description: "Add New Beacon Devices."
+			href "listBeaconsPage", title: "<b>List Beacon Devices</b>", description: "List All Beacon Devices."
 
             app(name: "anyOpenApp", appName: "April Brother BLE Beacon", namespace: "ajardolino3", title: "<b>Add a new Bluetooth Beacon</b>", multiple: true)
             paragraph("Gateway URL: <a href='${uri}'>${uri}</a>")
@@ -43,7 +43,20 @@ def mainPage() {
     }
 }
 
-def addBeaconsPage() {
+def listBeaconsPage() {
+    def devices = getChildDevices()
+    def message = ""
+    devices.each{ beacon ->
+        message += "\t${beacon.label} (${beacon.name})\n"
+    }
+    return dynamicPage(name: "listBeaconsPage", title: "Beacons", install: false, nextPage: mainPage) {
+        section() {
+            paragraph message
+        }
+    }
+}
+
+def addBeaconPage() {
 	def newBeacons = [:]
 	state.beacons.each { beacon ->
 		def isChild = getChildDevice(beacon.value.uuid)
@@ -52,45 +65,44 @@ def addBeaconsPage() {
 		}
 	}
     
-    return dynamicPage(name: "addBeaconsPage", title: "Add Beacons", install: false, nextPage: addBeaconsStatusPage) {
+    return dynamicPage(name: "addBeaconPage", title: "Add Beacon", install: false, nextPage: addBeaconStatusPage) {
         section(){
-			input ("selectedAddBeacons", "enum",
+			input ("selectedAddBeacon", "enum",
 				   required: true,
-				   multiple: true,
-				   title: "Select beacons to add (${newBeacons.size() ?: 0} new detected).\n\t" +
+				   multiple: false,
+				   title: "Select beacon to add (${newBeacons.size() ?: 0} new detected).\n\t" +
 				   "Total Beacons: ${state.beacons.size()}",
-				   description: "Use the dropdown to select beacons.  Then select 'Next'.",
+				   description: "Use the dropdown to select beacon.",
                    options: newBeacons)
+            input "selectedBeaconName", "string", required: true, title: "Beacon Name"
         }
     }
 }
 
-def addBeaconsStatusPage() {
+def addBeaconStatusPage() {
     def status = []
-    selectedAddBeacons.each{ beacon ->
-        logDebug("beacon: " + beacon)
-		def isChild = getChildDevice(beacon)
-		if (!isChild) {
-            try {
-                addChildDevice("ajardolino3", "Bluetooth Beacon", beacon)
-                status.push([uuid: beacon, success: true, error: null])
-            }
-            catch(error) {
-                status.push([uuid: beacon, success: false, error: error])
-            }
+    logDebug("beacon: " + selectedAddBeacon)
+    def isChild = getChildDevice(selectedAddBeacon)
+    if (!isChild) {
+        try {
+            addChildDevice("ajardolino3", "Bluetooth Beacon", selectedAddBeacon, ["label": selectedBeaconName])
+            status.push([uuid: selectedAddBeacon, success: true, error: null])
+        }
+        catch(error) {
+            status.push([uuid: selectedAddBeacon, success: false, error: error])
         }
     }
-	app?.removeSetting("selectedAddDevices")
+	app?.removeSetting("selectedAddBeacon")
+	app?.removeSetting("selectedBeaconName")
     def message = ""
     status.each{ result ->
         message += "\t${result}\n"
     }
-	return dynamicPage(name:"addBeaconsStatusPage",
-					   title: "Installation Status",
+	return dynamicPage(name:"addBeaconStatusPage",
+					   title: "Add Beacon Status",
 					   nextPage: mainPage,
 					   install: false) {
 	 	section() {
-			paragraph "Add Beacon Status"
             paragraph message
 		}
 	}
@@ -197,5 +209,4 @@ def getBeacons() {
 def logDebug(msg) {
     if(debugLog) log.debug(msg)
 }
-
 
