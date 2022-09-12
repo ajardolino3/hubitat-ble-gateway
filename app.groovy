@@ -55,7 +55,7 @@ def addBeaconsPage() {
     return dynamicPage(name: "addBeaconsPage", title: "Add Beacons", install: false, nextPage: addBeaconsStatusPage) {
         section(){
 			input ("selectedAddBeacons", "enum",
-				   required: false,
+				   required: true,
 				   multiple: true,
 				   title: "Select beacons to add (${newBeacons.size() ?: 0} new detected).\n\t" +
 				   "Total Beacons: ${state.beacons.size()}",
@@ -66,20 +66,32 @@ def addBeaconsPage() {
 }
 
 def addBeaconsStatusPage() {
+    def status = []
     selectedAddBeacons.each{ beacon ->
         logDebug("beacon: " + beacon)
 		def isChild = getChildDevice(beacon)
 		if (!isChild) {
-            addChildDevice("ajardolino3", "Bluetooth Beacon", beacon)
+            try {
+                addChildDevice("ajardolino3", "Bluetooth Beacon", beacon)
+                status.push([uuid: beacon, success: true, error: null])
+            }
+            catch(error) {
+                status.push([uuid: beacon, success: false, error: error])
+            }
         }
     }
 	app?.removeSetting("selectedAddDevices")
+    def message = ""
+    status.each{ result ->
+        message += "\t${result}\n"
+    }
 	return dynamicPage(name:"addBeaconsStatusPage",
 					   title: "Installation Status",
 					   nextPage: mainPage,
 					   install: false) {
 	 	section() {
-			paragraph "Installed"
+			paragraph "Add Beacon Status"
+            paragraph message
 		}
 	}
 }
@@ -112,7 +124,16 @@ mappings {
 def postGateway() {
     logDebug("POST received from Gateway: " + request.body)
     logDebug("Sending payload to device: " + gateway.name + ", payload: " + request.body)
-    def result = gateway.parsePayload(request.body)
+    def result = null
+    try
+    {
+        result = gateway.parsePayload(request.body)
+    }
+    catch(error)
+    {
+        logDebug("Unable to parse payload: " + error)
+        return
+    }
     def parsed = gateway.getDataValue("parsed")
 
     def slurper = new JsonSlurper()
@@ -176,4 +197,5 @@ def getBeacons() {
 def logDebug(msg) {
     if(debugLog) log.debug(msg)
 }
+
 
