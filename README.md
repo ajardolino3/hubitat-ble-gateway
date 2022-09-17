@@ -27,7 +27,7 @@ As of now, only iBeacons are supported.  You can set any UUID, Major, and Minor 
 use a single UUID for all beacons in your home and then use different Major/Minor numbers to identify each beacon.  Or you can make all of the
 values unique.  Each beacon must have its own unique combination in order to be detected as a separate device.
 
-Additional beacon types can be added.
+Additional beacon types can be added with modifications to the gateway and gateway drivers.
 
 # How Do I Install and Configure this App?
 
@@ -80,5 +80,48 @@ Fifth, setup your Beacons:
 5. The beacon should be added successfully.  If not, an error message will appear.
 6. Repeat these steps for each beacon.
 
+NOTE: DO NOT add beacon devices manually.  Always add them through the app.  The app will not be able to work with beacon devices unless they are added by the app.
+
 You can now configure your Hubitat Hub to automate events based upon the presence (or absence) of your beacons!
 
+# BLE Gateway Driver Specification
+
+This information is for developers who wish to build additional gateway drivers to work with the BLE Gateway Manager.
+
+The device driver you create must implement the following:
+- Add the capability "presenceSensor" (no need to implement arrived/departed methods)
+- Add a command called "parsePayload" which takes 1 parameter named payload (type STRING).  This command is called each time the gateway receives a payload from the gateway.
+- The driver must have the "singleThreaded" option set to "true"
+
+The parsePayload method must parse the incoming payload (sent from the gateway to the BLE Gateway Manager).  The payload is the body of the incoming POST request sent to the gateway.
+
+The parsePayload method must set a data value called "parsed" with a JSON string that matches the following structure:
+
+```
+{
+	"beacons": [
+		{	"type": "iBeacon", "uuid": "00000000000000000000000000000000", "major": 0, "minor": 0 },
+		{	"type": "iBeacon", "uuid": "00000000000000000000000000000000", "major": 0, "minor": 0 },
+		{	"type": "iBeacon", "uuid": "00000000000000000000000000000000", "major": 0, "minor": 0 }
+	]
+}
+```
+
+As you can see, the JSON object contains an array of beacons, each having a type, uuid, major, and minor value.
+- "type": This is the beacon type.  Currently, only "iBeacon" is supported.
+- "uuid": This is the 32-digit UUID of the beacon (without the dashes).  
+- "major": This is the major version number transmitted by the beacon.  It must be an integer.
+- "minor": This is the minor version number transmitted by the beacon.  It must be an integer.
+
+The JSON object should only contain beacons that are currently detected by the gateway.
+
+For an example device driver, look here: https://github.com/ajardolino3/hubitat-ble-gateway/blob/main/april-brother-ble-gateway.groovy
+
+The parsePayload method is called by the BLE Gateway Manager.  Once the method completes, the BLE Gateway Manager does the following:
+1. Assigns each beacon a unique Network ID.
+2. Checks to see if the beacon has been added as a device.  If so, it will set the value as arrived/present if its not already present.
+3. Finds any other devices that were previously added as devices and sets the value to departed/not present if its currently present (if not provided in the parsed
+payload, the BLE Gateway Manager assumes that the beacon is no longer present.
+4. Updates the app state with all beacon information.  This is used to track beacon state and to identify newly detected beacons that have not yet been added.
+
+Currently, only iBeacons are supported.  The Network ID for iBeacons is a combination of the UUID, Major, and Minor values, like so: "UUID:Major:Minor"
