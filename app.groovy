@@ -86,7 +86,7 @@ def addBeaconStatusPage() {
     def err = ""
     if (!isChild) {
         try {
-            addChildDevice("ajardolino3", "Bluetooth Beacon", selectedAddBeacon, ["label": selectedBeaconName])
+            addChildDevice("hubitat", "Virtual Presence", selectedAddBeacon, ["label": selectedBeaconName])
             success = true
         }
         catch(exception) {
@@ -195,11 +195,11 @@ def postGateway() {
 		if (isChild) {
             if(isChild.currentValue("presence") == "present" && !b.present) {
                 logDebug("Beacon: " + b.dni + ", presence: not present")
-                isChild.sendEvent(name: "presence", value: "not present")
+                isChild.departed()
             }
             else if(isChild.currentValue("presence") == "not present" && b.present) {
                 logDebug("Beacon: " + b.dni + ", presence: present")
-                isChild.sendEvent(name: "presence", value: "present")
+                isChild.arrived()
             }
     	}
     }
