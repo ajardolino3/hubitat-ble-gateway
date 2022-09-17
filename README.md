@@ -31,7 +31,7 @@ Additional beacon types can be added.
 
 # How Do I Install and Configure this App?
 
-First, you must install the app and device driver code.
+First, install the app and device driver code in your Hubitat Hub.
 1. Go to the "Apps Code" section of your Hubitat Hub and click the "New App" button.
 2. Click the import button.  Enter this url for the app: https://raw.githubusercontent.com/ajardolino3/hubitat-ble-gateway/main/app.groovy
 3. Click the save button to save the app.
@@ -41,12 +41,12 @@ to allow the BLE gateway to communicate with your Hubitat hub.
 6. Click the import button.  Enter this url for the app: https://raw.githubusercontent.com/ajardolino3/hubitat-ble-gateway/main/april-brother-ble-gateway.groovy
 7. Click the save button to save the app.
 
-Second, you must setup your gateway device:
+Second, setup your gateway device in your Hubitat Hub:
 1. Go to the "Devices" section and click the "Add Device" button.
 2. Click the "Virtual" button, and then enter a name.
 3. In the Type dropdown, choose your driver (e.g. "April Brother BLE Gateway"), then click Save.
 
-Third, you must setup the app:
+Third, setup the BLE Gateway Manager app in your Hubitat Hub:
 1. Go to the "Apps" section and click the "Add User App" button.
 2. Choose the "BLE Gateway Manager".
 3. Select your BLE gateway device you added previously and then click Update.
@@ -54,7 +54,7 @@ Third, you must setup the app:
 5. Click the "BLE Gateway Manager" app again.
 6. Note the link created to configure your gateway.  You will configure your gateway using this info. You can highlight and copy (Ctrl+C) if you wish.  In chrome, you can right-click and choose "Copy link address".
 
-Fourth, you must setup your gateway.  These steps are specific to the April Brother BLE Gateway and assume it has not yet been configured:
+Fourth, setup your BLE Gateway.  These steps are specific to the April Brother BLE Gateway, and assumes it has all the factory default settings:
 1. Power up your new BLE gateway and plug it into your ethernet network.
 2. Download and install the gateway configuration tool, which can be found here: https://wiki.aprbrother.com/en/Software_AB_BLE_Gateway_V4.html
 3. Once installed, launch the gateway configuration tool.
@@ -71,7 +71,14 @@ Fourth, you must setup your gateway.  These steps are specific to the April Brot
    - Duplicate Filter: Enable
    Click Save.  Make sure the popup appears that confirms the changes have been saved.
    
+Fifth, setup your Beacons:
+1. Configure your beacons using the software provided with your beacon.
+1. IMPORTANT: Make sure your beacon is on and actively broadcasting before you attempt to add.  Only beacons that have been detected by the gateway and data transmitted to your Hubitat Hub will appear.
+2. Go to the "Apps" section and click to open the "BLE Gateway Manager" app.
+3. Click the "Add New Beacon" button.
+4. The newly detected beacons will appear.  Select the one you want to add and give it a name, then click Next.
+5. The beacon should be added successfully.  If not, an error message will appear.
+6. Repeat these steps for each beacon.
 
-Fourth, you must con:
-1. 
+You can now configure your Hubitat Hub to automate events based upon the presence (or absence) of your beacons!
 

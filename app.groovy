@@ -34,7 +34,7 @@ def mainPage() {
             paragraph("The BLE Gateway Manager processes data from a Bluetooth (BLE) Gateway to detect the presence of beacons.")
 			input "gateway", "capability.presenceSensor", title: "Select your BLE Gateway Device", multiple: false, required: true
             paragraph("Configure your gateway to use this URL: <a href='${uri}'>${uri}</a>")
-			href "addBeaconPage", title: "<b>Add Beacons</b>", description: "Adds new beacon devices."
+			href "addBeaconPage", title: "<b>Add New Beacon</b>", description: "Adds new beacon device."
 			href "listBeaconsPage", title: "<b>List Beacons</b>", description: "Lists added beacon devices."
 			input "debugLog", "bool", title: "Enable debug logging", submitOnChange: true, defaultValue: false
         }
