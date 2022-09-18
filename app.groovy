@@ -11,8 +11,8 @@ definition(
 	iconUrl: "",
 	iconX2Url: "",
 	singleInstance: true,
-	documentationLink: "",
-	importUrl: "",
+	documentationLink: "https://github.com/ajardolino3/hubitat-ble-gateway/blob/main/README.md",
+    importUrl: "",
     singleThreaded: true // important: required so gateway manager and gateway driver can communicate with each other
 )
 
