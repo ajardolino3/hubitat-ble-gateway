@@ -1,5 +1,7 @@
 import groovy.json.*
 
+def deviceVersion() { return "1.1.0" }
+
 metadata {
 	definition (
         name: "April Brother BLE Gateway", 
@@ -10,6 +12,9 @@ metadata {
         capability "PresenceSensor"
         command "parsePayload", [[name: "payload", type: "STRING"]] 
 	}   
+    preferences {
+		input ("debugLog", "bool", title: "Enable debug logging", defaultValue: false)
+    }
 }
 
 def parsePayload(payload) {
@@ -25,11 +30,16 @@ def parsePayload(payload) {
         def mac = device[1]
         def rssi = device[2]
         def data = device[3]
-        if(data.length() == 60) {
+        logDebug("beacon detected: type: ${type}, mac: ${mac}, rssi: ${rssi}, data: ${data}")
+        
+        // beacon data starting with 0201 is an iBeacon
+        // substring(6,8) indicates length, and a length of 1A = 26 bytes (contains UUID (16 bytes), Major (4 bytes), Minor (4 bytes), and transmit power (2 bytes))
+        // see Apple's iBeacon specification for more information: https://developer.apple.com/ibeacon/
+        if(data.length() == 60 && data.substring(0,4) == "0201" && data.substring(6,8) == "1A") {
             def uuid = data.substring(18,18+32)
             def major = Integer.parseInt(data.substring(18+32,18+32+4),16)
             def minor = Integer.parseInt(data.substring(18+32+4,18+32+8),16)
-            log.debug("iBeacon detected: " + uuid + ", major: " + major + ", minor: " + minor)
+            logDebug("iBeacon detected: " + uuid + ", major: " + major + ", minor: " + minor)
             def beacon = [:]
             beacon.type = "iBeacon"
             beacon.uuid = uuid
@@ -48,5 +58,5 @@ def installed() {
 }
 
 def logDebug(msg) {
-    log.debug(msg)
+    if(debugLog)log.debug(msg)
 }
