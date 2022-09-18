@@ -1,0 +1,27 @@
+{
+  "packageName": "BLE Gateway Manager",
+  "author": "Art Ardolino",
+  "version": "1.0.0",
+  "minimumHEVersion": "2.3.0",
+  "dateReleased": "2022-09-17",
+  "apps": [
+    {
+      "id": "8486ec4c-1866-4770-b556-98a19e561b10",
+      "name": "BLE Gateway Manager",
+      "namespace": "ajardolino3",
+      "location": "https://raw.githubusercontent.com/ajardolino3/hubitat-ble-gateway/main/app.groovy",
+      "required": true,
+      "oauth": true,
+      "primary": false
+    }
+  ],
+  "drivers": [
+    {
+      "id": "da38c0dc-6b72-427d-84d4-7d8b5d0f0364",
+      "name": "April Brother BLE Gateway",
+      "namespace": "ajardolino3",
+      "location": "https://raw.githubusercontent.com/ajardolino3/hubitat-ble-gateway/main/april-brother-ble-gateway.groovy",
+      "required": false
+    }
+  ]
+}
