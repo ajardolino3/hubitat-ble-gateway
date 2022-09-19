@@ -1,6 +1,6 @@
 import groovy.json.*
 
-def appVersion() { return "1.0.0" }
+def appVersion() { return "1.1.0" }
 
 definition(
 	name: "BLE Gateway Manager",
@@ -86,7 +86,7 @@ def addBeaconStatusPage() {
     def err = ""
     if (!isChild) {
         try {
-            addChildDevice("hubitat", "Virtual Presence", selectedAddBeacon, ["label": selectedBeaconName])
+            addChildDevice("ajardolino3", "BLE Beacon", selectedAddBeacon, ["label": selectedBeaconName])
             success = true
         }
         catch(exception) {
