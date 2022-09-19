@@ -32,7 +32,7 @@ Additional beacon types can be added with modifications to the gateway and gatew
 # How Do I Install and Configure this App?
 
 First, install the app and device driver code in your Hubitat Hub.
-1. Make sure the Hubitat Package Manager is installed.
+1. Make sure the Hubitat Package Manager is installed.  If not, please see instructions here: https://hubitatpackagemanager.hubitatcommunity.com/installing.html
 2. Go to the "Apps" section of your Hubitat Hub and click "Hubitat Package Manager".
 3. Click "Install".
 4. Choose the option to "Browse by Tags".
