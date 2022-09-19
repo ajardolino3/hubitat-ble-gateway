@@ -32,19 +32,20 @@ Additional beacon types can be added with modifications to the gateway and gatew
 # How Do I Install and Configure this App?
 
 First, install the app and device driver code in your Hubitat Hub.
-1. Go to the "Apps Code" section of your Hubitat Hub and click the "New App" button.
-2. Click the import button.  Enter this url for the app: https://raw.githubusercontent.com/ajardolino3/hubitat-ble-gateway/main/app.groovy
-3. Click the save button to save the app.
-4. Click the OAuth button, then click "Enable OAuth in App" when the popup window appears.  Click the Update button.  This step is necessary
-to allow the BLE gateway to communicate with your Hubitat hub.
-5. Go to the "Drivers Code" section of your Hubitat Hub and click the "New Driver" button.
-6. Click the import button.  Enter this url for the app: https://raw.githubusercontent.com/ajardolino3/hubitat-ble-gateway/main/april-brother-ble-gateway.groovy
-7. Click the save button to save the app.
+1. Make sure the Hubitat Package Manager is installed.
+2. Go to the "Apps" section of your Hubitat Hub and click "Hubitat Package Manager".
+3. Click "Install".
+4. Choose the option to "Browse by Tags".
+5. Under tags(s), choose "Presence & Location".
+6. The corresponding applications will appear.  Select "BLE Gateway Manager".
+7. Under the drivers to install, choose the "April Brother BLE Gateway" (to use this gateway/driver).  Click "Next".
+8. Click "Next" again on the "Ready to Install" page to install.
+9. Once the installation is complete, click "Next". 
 
 Second, setup your gateway device in your Hubitat Hub:
 1. Go to the "Devices" section and click the "Add Device" button.
 2. Click the "Virtual" button, and then enter a name.
-3. In the Type dropdown, choose your driver (e.g. "April Brother BLE Gateway"), then click Save.
+3. In the Type dropdown, choose your driver (e.g. "April Brother BLE Gateway"), then click "Save Device".
 
 Third, setup the BLE Gateway Manager app in your Hubitat Hub:
 1. Go to the "Apps" section and click the "Add User App" button.
