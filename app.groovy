@@ -1,6 +1,6 @@
 import groovy.json.*
 
-def appVersion() { return "1.1.0" }
+def appVersion() { return "1.2.0" }
 
 definition(
 	name: "BLE Gateway Manager",
@@ -45,7 +45,7 @@ def listBeaconsPage() {
     def devices = getChildDevices()
     def message = ""
     devices.each{ beacon ->
-        message += "\t${beacon.label} (${beacon.name}, Network ID: ${beacon.getDeviceNetworkId()})\n"
+        message += "\t${beacon.label} (Name: ${beacon.name}, Type: ${beacon.type}, Network ID: ${beacon.getDeviceNetworkId()})\n"
     }
     return dynamicPage(name: "listBeaconsPage", title: "List Beacons", install: false, nextPage: mainPage) {
         section() {
@@ -60,7 +60,7 @@ def addBeaconPage() {
 	state.beacons.each { beacon ->
 		def isChild = getChildDevice(beacon.value.dni)
 		if (!isChild && beacon.value.present) {
-			newBeacons["${beacon.value.dni}"] = "${beacon.value.dni}"
+            newBeacons["${beacon.value.dni}"] = "${beacon.value.type}: ${beacon.value.dni}"
 		}
 	}
     
@@ -159,6 +159,7 @@ def postGateway() {
     
     def detected = String.format("%tF %<tH:%<tM", java.time.LocalDateTime.now())
     obj.beacons.each { beacon ->
+        beacon.dni = ""
         if(beacon.type)
         {
             switch(beacon.type) {
@@ -170,13 +171,29 @@ def postGateway() {
                         logDebug("iBeacon type has invalid uuid, major, or minor types")
                     }
                     break
+                case "auto":
+                    if(beacon.data instanceof String && beacon.rssi instanceof Integer)
+                    {
+                        def pobj = parseBeaconData(beacon)
+                        if(pobj.success) {
+                            setBeaconData(pobj)
+                        }
+                    }
+                    break
                 default:
                     logDebug("unknown beacon type: " + beacon.type)
                     break
             }
         }
-        if(beacon.dni)
+        if(beacon.dni.length()>0)
         {
+            if(beacon.type=="eddystone-UID") {
+                logDebug("eddystone-UID detected: namespace: ${beacon.namespace}, instance: ${beacon.instance}, dni: ${beacon.dni}")
+            }
+            else {
+                logDebug("${beacon.type} detected: uuid: ${beacon.uuid}, major: ${beacon.major}, minor: ${beacon.minor}, power: ${beacon.power}, rssi: ${beacon.rssi}, distance: ${beacon.distance}, dni: ${beacon.dni}")
+            }
+            
             def b = state.beacons["${beacon.dni}"]
             if(!b) {
                 b = [:]
@@ -184,29 +201,120 @@ def postGateway() {
             }
             b.present = true
             b.detected = detected
+            b.rssi = beacon.rssi * -1
+            b.distance = beacon.distance
+            b.power = beacon.power * -1
+            b.type = beacon.type
             state.beacons["${beacon.dni}"] = b
         }
     }
     
 	state.beacons.each { beacon ->
-        //if(beacon.value.detected) logDebug("last detected: " + Date.parse("yyyy-MM-dd HH:mm", beacon.value.detected))
         def b = beacon.value
 		def isChild = getChildDevice(b.dni)
 		if (isChild) {
+            logDebug("is child: " + b.dni + " present: " + b.present)
             if(isChild.currentValue("presence") == "present" && !b.present) {
-                logDebug("Beacon: " + b.dni + ", presence: not present")
+                logDebug("Beacon ${b.dni}, departed")
                 isChild.departed()
             }
             else if(isChild.currentValue("presence") == "not present" && b.present) {
-                logDebug("Beacon: " + b.dni + ", presence: present")
+                logDebug("Beacon ${b.dni}, arrived")
                 isChild.arrived()
+            }
+            if(!b.present) {
+                b.rssi = 999999999
+                b.power = 999999999
+                b.distance = 999999999
+            }
+            if(b.present) {
+                sendEvent(isChild, [name: "rssi", value: b.rssi, descriptionText: "RSSI value set"])
+                sendEvent(isChild, [name: "power", value: b.power, descriptionText: "Power value set"])
+                sendEvent(isChild, [name: "distance", value: b.distance, descriptionText: "Distance value set"])
             }
     	}
     }
 }
 
-def logDebug(msg) {
-    if(debugLog) log.debug(msg)
+def parseBeaconData(beacon){
+    def data = beacon.data
+    def rssi = beacon.rssi
+    def obj = [:]
+    obj.success = true
+    obj.parsed = []
+    obj.beacon = beacon
+    def i = 0
+    while(data.length()>=2 && i<100){
+        i=i+1
+        def p = [:]
+        try{
+            
+        def next = data.substring(0,2)
+        data = data.substring(2)
+        p.length = Integer.parseInt(next,16)
+        p.type = data.substring(0,2)
+        p.segment = data.substring(2,2*p.length)
+        data = data.substring(2*p.length)
+        obj.parsed.push(p)
+        }catch(error){
+            p.error = error
+            obj.parsed.push(p)
+            obj.success = false
+            break
+        }
+    }
+    return obj
+}
+
+def setBeaconData(obj) {
+    def pd = obj.parsed
+    if(pd.size() == 2 && (pd[1].length == 26 || pd[1].length == 27) && pd[1].type == "FF")
+    {
+        def uuid = pd[1].segment.substring(8,40)
+        def major = Integer.parseInt(pd[1].segment.substring(40,44),16)
+        def minor = Integer.parseInt(pd[1].segment.substring(44,48),16)
+        def power = pd[1].segment.substring(48,50)
+        def measuredPower = 999999999
+        def distance = 999999999
+        try
+        {
+            BigInteger bigInt = BigInteger.valueOf(Integer.parseInt(power, 16))
+            measuredPower = (bigInt.toByteArray())[1]
+            distance = Math.round(getDistanceInMeters(measuredPower, obj.beacon.rssi) * 3.28084)
+        }
+        catch(error)
+        {
+        }
+        obj.beacon.type = "iBeacon"
+        if(pd[1].length==27) obj.beacon.type = "altBeacon"
+        obj.beacon.uuid = uuid
+        obj.beacon.major = major
+        obj.beacon.minor = minor
+        obj.beacon.dni = "${obj.beacon.uuid}:${obj.beacon.major}:${obj.beacon.minor}"
+        obj.beacon.power = measuredPower
+        obj.beacon.distance = distance
+    }
+    else if(pd.size() == 3 && pd[2].length == 23 && pd[2].type == "16")
+    {
+        def namespace = pd.segment[2].substring(8,28)
+        def instance = pd.segment[2].substring(28,40)
+        def beacon = [:]
+        obj.beacon.type = "eddystone-UID"
+        obj.beacon.namespace = namespace
+        obj.beacon.instance = instance
+        obj.beacon.dni = "${obj.beacon.namespace}:${obj.beacon.instance}"
+        obj.beacon.power = measuredPower
+        obj.beacon.distance = distance
+    }
+}
+
+def getDistanceInMeters(measuredPower, rssi) {
+    def ratio_db = measuredPower - rssi
+    def dBm = 2
+    return ratio_linear = Math.pow(10, ratio_db / (10*dBm))
 }
 
 
+def logDebug(msg) {
+    if(debugLog) log.debug(msg)
+}
