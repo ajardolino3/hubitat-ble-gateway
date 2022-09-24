@@ -27,19 +27,16 @@ iBeacons, AltBeacons, and Eddystone-UID beacons are supported.  You can set any 
 or any Namespace/Instance for Eddystone-UID.  Each beacon must have its own unique combination in order to be detected as a separate device and to avoid
 confusion with distance calculation.
 
-# How should I use the distance value?
+# How is distance calculated?
 
-The distance value is an estimation in feet.  Note that this calculation is an approximation and is not perfect, as its measuring a radio signal.
-If you are going to use this value in your automation rules, it is recommended that you use a range.  If the beacon is not present (or the distance cannot
-be calculated), the distance value is 999999999 (this is also true for the rssi and power values).  The reason for this is to make home automation rules
-easier to create (i.e., "if my beacon present and less than 100 feet away" will still work as expected if distance cannot be calculated).  This is by design.
-
-Distance (in feet) is calculated using the following formula: 10 ^ ((Measured Power - RSSI)/(10 * N)) * 3.28084
+Distance is calculated (in feet) using the following formula: 10 ^ ((Measured Power - RSSI)/(10 * N)) * 3.28084
 - N is set to a value of "2" for low-strength beacons
-- More information about this calculation can be found here: https://medium.com/beingcoders/convert-rssi-value-of-the-ble-bluetooth-low-energy-beacons-to-meters-63259f307283
+- If the beacon is not present (or the distance cannot be calculated), the distance value is 999999999 (this is also true for the rssi and power values).  The reason for this
+is to make home automation rules easier to create (i.e., "if my beacon present and less than 100 feet away" will still work as expected if distance cannot be calculated).  This is by design.
 - **NOTE: While distance is calculated, please note it is an estimate.  The detection of presence of a beacon will be much more reliable than the distance calculation.
 If you decide to use distance in your home automations, it is recommended you use a range (e.g. <= 35 feet away).  You will need to test with your beacon in your environment
 and see what distance values are calculated before creating home automations using the distance (custom) attribute.**
+- More information about this calculation can be found here: https://medium.com/beingcoders/convert-rssi-value-of-the-ble-bluetooth-low-energy-beacons-to-meters-63259f307283
 
 *Also note that RSSI and power values are typically represented as a negative number.  For home automation purposes and to simplify the creation of rules, these values
 are represented as positive numbers instead.*
