@@ -15,19 +15,19 @@ must parse the incoming data and format it into a contruct that allows the BLE g
 people to use the gateway of their choice.
 - **BLE Beacons Driver**: The gateway uses this driver to create devices for each detected beacon.  
 
-# What BLE Gateways are supported?
+# What BLE Gateways are Supported?
 
 As of today, only the April Brother BLE Gateway (v4) is supported.  You can purchase one here: https://store.aprbrother.com/product/ab-ble-gateway-4-0
 
 Additional gateway drivers can be built as long as the follow the gateway driver specifications (see below).
 
-# What Beacon Types are supported?
+# What Beacon Types are Supported?
 
 iBeacons, AltBeacons, and Eddystone-UID beacons are supported.  You can set any UUID, Major, and Minor number you want to use for each iBeacon/AltBeacon,
 or any Namespace/Instance for Eddystone-UID.  Each beacon must have its own unique combination in order to be detected as a separate device and to avoid
 confusion with distance calculation.
 
-# How is distance calculated?
+# How is Distance Calculated?
 
 Distance is calculated (in feet) using the following formula: 10 ^ ((Measured Power - RSSI)/(10 * N)) * 3.28084
 - N is set to a value of "2" for low-strength beacons
