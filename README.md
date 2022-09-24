@@ -31,7 +31,7 @@ confusion with distance calculation.
 
 Distance is calculated (in feet) using the following formula: 10 ^ ((Measured Power - RSSI)/(10 * N)) * 3.28084
 - N is set to a value of "2" for low-strength beacons
-- If the beacon is not present (or the distance cannot be calculated), the distance value is 999999999 (this is also true for the rssi and power values).  The reason for this
+- If the beacon is not present (or the distance cannot be calculated), the distance value is set to 999999999 (this is also true for the rssi and power values).  The reason for this
 is to make home automation rules easier to create (i.e., "if my beacon present and less than 100 feet away" will still work as expected if distance cannot be calculated).  This is by design.
 - **NOTE: While distance is calculated, please note it is an estimate.  The detection of presence of a beacon will be much more reliable than the distance calculation.
 If you decide to use distance in your home automations, it is recommended you use a range (e.g. <= 35 feet away).  You will need to test with your beacon in your environment
