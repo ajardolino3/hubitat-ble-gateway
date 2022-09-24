@@ -25,8 +25,7 @@ Additional gateway drivers can be built as long as the follow the gateway driver
 
 iBeacons, AltBeacons, and Eddystone-UID beacons are supported.  You can set any UUID, Major, and Minor number you want to use for each iBeacon/AltBeacon,
 or any Namespace/Instance for Eddystone-UID.  Each beacon must have its own unique combination in order to be detected as a separate device and to avoid
-confusion with distance calculation.  Note that distance is only available for iBeacons and AltBeacons.  Do not create multiple beacons with the same
-values - they will be treated as if they are one beacon (and distance calculations will be flip-flopping between the information received by both beacons).
+confusion with distance calculation.
 
 # How should I use the distance value?
 
@@ -34,11 +33,6 @@ The distance value is an estimation in feet.  Note that this calculation is an a
 If you are going to use this value in your automation rules, it is recommended that you use a range.  If the beacon is not present (or the distance cannot
 be calculated), the distance value is 999999999 (this is also true for the rssi and power values).  The reason for this is to make home automation rules
 easier to create (i.e., "if my beacon present and less than 100 feet away" will still work as expected if distance cannot be calculated).  This is by design.
-
-Note that distance can only be calculated for iBeacon/AltBeacon, since Eddystone-UID beacons do not provide the measured power value needed to approximate distance.
-If you are using an Eddystone-UID, you can use the rssi value to approximate distance.  Note that this value is a measure of power (0 to 127).  The higher the power,
-the farther the beacon is away.  Note that typically rssi is expressed as a negative number, but is saved on the device as a positive number to make home automation
-rules easier to create.
 
 # How Do I Install and Configure this App?
 
@@ -134,6 +128,6 @@ The parsePayload method is called by the BLE Gateway Manager.  Once the method c
 3. Checks to see if the beacon has been added as a device.  If so, it will set the value as arrived/present if its not already present.
 4. Finds any other devices that were previously added as devices and sets the value to departed/not present if its currently present (if not provided in the parsed
 payload, the BLE Gateway Manager assumes that the beacon is no longer present.
-5. Updates the app state with all beacon information.  This is used to track beacon state and to identify newly detected beacons that have not yet been added.  For
-iBeacon/AltBeacon, the rssi from the gateway and the measured power from the advertised data is used to estimate distance (in feet).
+5. Updates the app state with all beacon information.  This is used to track beacon state and to identify newly detected beacons that have not yet been added.  The
+rssi from the gateway and the measured power from the advertised beacon data is used to estimate distance (in feet).
 

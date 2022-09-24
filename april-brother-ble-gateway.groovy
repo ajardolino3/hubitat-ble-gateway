@@ -1,6 +1,6 @@
 import groovy.json.*
 
-def deviceVersion() { return "1.2.0" }
+def deviceVersion() { return "1.3.0" }
 
 metadata {
 	definition (
@@ -34,6 +34,7 @@ def parsePayload(payload) {
         b.rssi = device[2]
         b.data = device[3]
         obj.beacons.push(b)
+        logDebug(b)
     }
                   
     def json = JsonOutput.toJson(obj)

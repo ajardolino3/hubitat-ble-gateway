@@ -1,6 +1,6 @@
 import groovy.json.*
 
-def deviceVersion() { return "1.2.0" }
+def deviceVersion() { return "1.3.0" }
 
 metadata {
 	definition (
@@ -16,6 +16,7 @@ metadata {
         attribute "rssi", "number"
         attribute "power", "number"
         attribute "distance", "number"
+        attribute "type", "string"
 	}   
 }
 
@@ -24,6 +25,7 @@ def installed() {
     sendEvent(name: "rssi", value: 999999999)
     sendEvent(name: "power", value: 999999999)
     sendEvent(name: "distance", value: 999999999)
+    sendEvent(name: "type", value: "unknown")
 }
 
 def arrived() {
