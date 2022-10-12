@@ -76,7 +76,7 @@ Fourth, setup your BLE Gateway.  These steps are specific to the April Brother B
 6. Click the Network tab along the top.  Enter in your WiFi SSID and Security Key, then click Save.  Make sure the popup appears that confirms the changes have been saved.
 7. Click the Application tab along the top.  Change the following settings:
    - Connection Type: HTTP Client
-   - Host: The IP address of your Hubitat Hub.  You can find the IP adddress in the link displayed in the BLE Gateway Manager app.
+   - Host: The IP address of your Hubitat Hub.  You can find the IP address in the link displayed in the BLE Gateway Manager app.
    - Port: 80
    - URI: The path portion of the link displayed in the BLE Gateway Manager app, beginning with the word "apps" (e.g., "apps/api/###/gateway?access-token=xxxxxxxx").
      DO NOT include the "http://xx.xx.xx.xx/" part of the link in the URI field.
