@@ -1,8 +1,7 @@
 # BLE Gateway Manager for Hubitat
 
-This app allows Hubitat users to create BLE beacons along with a BLE gateway.  The app adds your beacons to yout Hubitat hub
-using Virtual Presence device drivers.  This allows you to build automations (e.g., using the Rule Machine) that trigger
-events to occur based upon the presence (or absence) of a beacon.
+This app allows Hubitat users to create BLE beacons along with a BLE gateway.  The app allows you to build automations (e.g., using the Rule Machine)
+that trigger events to occur based upon the presence (or absence) of a beacon.
 
 # How Does it Work?
 
