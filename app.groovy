@@ -1,6 +1,6 @@
 import groovy.json.*
 
-def appVersion() { return "1.3.0" }
+def appVersion() { return "1.4.0" }
 
 definition(
 	name: "BLE Gateway Manager",
@@ -36,6 +36,7 @@ def mainPage() {
             paragraph("Configure your gateway to use this URL: <a href='${uri}'>${uri}</a>")
 			href "addBeaconPage", title: "<b>Add New Beacon</b>", description: "Adds new beacon device."
 			href "listBeaconsPage", title: "<b>List Beacons</b>", description: "Lists added beacon devices."
+            input "nonCompliant", "bool", title: "Enable non-compliant device support", submitOnChange: true, defaultValue: false
 			input "debugLog", "bool", title: "Enable debug logging", submitOnChange: true, defaultValue: false
         }
     }
@@ -177,6 +178,8 @@ def postGateway() {
                         def pobj = parseBeaconData(beacon)
                         if(pobj.success) {
                             setBeaconData(pobj)
+                        } else {
+                            logDebug("error parsing beacon: " + pobj.error)
                         }
                     }
                     break
@@ -246,6 +249,11 @@ def postGateway() {
 
 def parseBeaconData(beacon){
     def data = beacon.data
+    if(nonCompliant) {
+        if(data.length() == 56) data = "02011A" + data // altbeacon fix
+        else if(data.length() == 54) data = "02011A" + data // ibeacon fix
+        else if(data.length() == 52) data = "020106" + data // eddystone-UID fix
+    }
     def rssi = beacon.rssi
     def obj = [:]
     obj.success = true
@@ -279,6 +287,7 @@ def setBeaconData(obj) {
     obj.beacon.power = 999999999
     obj.beacon.distance = obj.beacon.power
     def power = ""
+    logDebug("set beacon data: " + obj);
     if(pd.size() == 2 && (pd[1].length == 26 || pd[1].length == 27) && pd[1].type == "FF")
     {
         obj.beacon.type = "iBeacon"
@@ -297,6 +306,14 @@ def setBeaconData(obj) {
         obj.beacon.dni = "${obj.beacon.namespace}:${obj.beacon.instance}"
         power = pd.segment[2].substring(6,8)
     }
+    else if(nonCompliant && pd.size() == 3 && pd[2].length == 21 && pd[2].type == "16") // eddystone-uid fix
+    {
+        obj.beacon.type = "eddystone-UID"
+        obj.beacon.namespace = pd.segment[2].substring(8,28)
+        obj.beacon.instance = pd.segment[2].substring(28,40)
+        obj.beacon.dni = "${obj.beacon.namespace}:${obj.beacon.instance}"
+        power = pd.segment[2].substring(6,6)
+    } 
     if(power.length()>0) {
         try
         {
