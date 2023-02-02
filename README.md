@@ -94,6 +94,9 @@ Fifth, setup your Beacons:
 
 NOTE: DO NOT add beacon devices manually.  Always add them through the app.  The app will not be able to work with beacon devices unless they are added by the app.
 
+NOTE: If your beacon is not showing up, try enabling the option for non-compliant device support.  Discovered that beacon apps (e.g. Android Simulator Beacon app) do not transmit according to the
+Bluetooth BLE standard specification.  Enabling this option will alter the advertised data so the beacon can be detected.
+
 You can now configure your Hubitat Hub to automate events based upon the presence (or absence) of your beacons!
 
 # BLE Gateway Driver Specification
