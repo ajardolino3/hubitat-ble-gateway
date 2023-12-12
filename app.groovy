@@ -216,30 +216,33 @@ def postGateway() {
     }
     
     def newstate = [:]
-    state.depCheck = state.depCheck ?: 0
     departRetries = departRetries ?: 2
     
 	state.beacons.each { beacon ->
         def b = beacon.value
 		def isChild = getChildDevice(b.dni)
 		if (isChild) {
+            depCheck = isChild.currentValue("depCheck") ?: 0
+            //if(descLog) log.info("Beacon ${b.dni}, Dep Check: ${depCheck}")
             logDebug("beacon ID: " + b.dni + " present: " + b.present)
             if(isChild.currentValue("presence") == "present" && !b.present) {
-                state.depCheck += 1
-                if(descLog) log.info("Beacon ${b.dni}, ${state.depCheck} vs ${departRetries}")
-                if(state.depCheck >= departRetries) {
-                    if(descLog) log.info("Beacon ${b.dni}, departed (${state.depCheck} vs ${departRetries})")
+                depCheck += 1
+                if(descLog) log.info("Beacon ${b.dni}, ${depCheck} vs ${departRetries} (1)")
+                if(depCheck >= departRetries) {
+                    if(descLog) log.info("Beacon ${b.dni}, departed (${depCheck} vs ${departRetries}) (2)")
                     isChild.departed()
+                } else {
+                    sendEvent(isChild, [name: "depCheck", value: depCheck, descriptionText: "depCheck set"])
                 }
             }
             else if(isChild.currentValue("presence") == "not present" && b.present) {
-                state.depCheck = 0
+                sendEvent(isChild, [name: "depCheck", value: 0, descriptionText: "depCheck set"])
                 if(descLog) log.info("Beacon ${b.dni}, arrived")
                 isChild.arrived()
             } else {
-                if(state.depCheck > 0) {
-                    state.depCheck = 0
-                    if(descLog) log.info("Beacon ${b.dni}, Reseting: ${state.depCheck} vs ${departRetries}")
+                if(depCheck > 0) {
+                    sendEvent(isChild, [name: "depCheck", value: 0, descriptionText: "depCheck set"])
+                    if(descLog) log.info("Beacon ${b.dni}, Reseting: ${depCheck} vs ${departRetries} (3)")
                 }
             }
             if(!b.present) {
@@ -252,6 +255,7 @@ def postGateway() {
                 sendEvent(isChild, [name: "rssi", value: b.rssi, descriptionText: "RSSI value set"])
                 sendEvent(isChild, [name: "power", value: b.power, descriptionText: "Power value set"])
                 sendEvent(isChild, [name: "distance", value: b.distance, descriptionText: "Distance value set"])
+                sendEvent(isChild, [name: "depCheck", value: 0, descriptionText: "depCheck set"])
             }
     	}
         if(isChild || b.present) {
