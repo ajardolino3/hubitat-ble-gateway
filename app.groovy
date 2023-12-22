@@ -1,6 +1,6 @@
 import groovy.json.*
 
-def appVersion() { return "1.4.0" }
+def appVersion() { return "1.4.1" }
 
 definition(
 	name: "BLE Gateway Manager",
@@ -36,8 +36,11 @@ def mainPage() {
             paragraph("Configure your gateway to use this URL: <a href='${uri}'>${uri}</a>")
 			href "addBeaconPage", title: "<b>Add New Beacon</b>", description: "Adds new beacon device."
 			href "listBeaconsPage", title: "<b>List Beacons</b>", description: "Lists added beacon devices."
+            input "departRetries", "number", title: "Number of retries before marking as Departed", submitOnChange: true, defaultValue: 2, width:6
+            input "envValue", "number", title: "Environment Value (2..4) <small>* This will help with the distance calculation</small>", range: '2..4', submitOnChange: true, defaultValue: 2, width:6
             input "nonCompliant", "bool", title: "Enable non-compliant device support", submitOnChange: true, defaultValue: false
 			input "debugLog", "bool", title: "Enable debug logging", submitOnChange: true, defaultValue: false
+            input "descLog", "bool", title: "Enable description logging", submitOnChange: true, defaultValue: false
         }
     }
 }
@@ -213,19 +216,34 @@ def postGateway() {
     }
     
     def newstate = [:]
+    departRetries = departRetries ?: 2
     
 	state.beacons.each { beacon ->
         def b = beacon.value
 		def isChild = getChildDevice(b.dni)
 		if (isChild) {
+            depCheck = isChild.currentValue("depCheck") ?: 0
+            //if(descLog) log.info("Beacon ${b.dni}, Dep Check: ${depCheck}")
             logDebug("beacon ID: " + b.dni + " present: " + b.present)
             if(isChild.currentValue("presence") == "present" && !b.present) {
-                log.info("Beacon ${b.dni}, departed")
-                isChild.departed()
+                depCheck += 1
+                if(descLog) log.info("Beacon ${b.dni}, ${depCheck} vs ${departRetries} (1)")
+                if(depCheck >= departRetries) {
+                    if(descLog) log.info("Beacon ${b.dni}, departed (${depCheck} vs ${departRetries}) (2)")
+                    isChild.departed()
+                } else {
+                    sendEvent(isChild, [name: "depCheck", value: depCheck, descriptionText: "depCheck set"])
+                }
             }
             else if(isChild.currentValue("presence") == "not present" && b.present) {
-                log.info("Beacon ${b.dni}, arrived")
+                sendEvent(isChild, [name: "depCheck", value: 0, descriptionText: "depCheck set"])
+                if(descLog) log.info("Beacon ${b.dni}, arrived")
                 isChild.arrived()
+            } else {
+                if(depCheck > 0) {
+                    sendEvent(isChild, [name: "depCheck", value: 0, descriptionText: "depCheck set"])
+                    if(descLog) log.info("Beacon ${b.dni}, Reseting: ${depCheck} vs ${departRetries} (3)")
+                }
             }
             if(!b.present) {
                 b.rssi = 999999999
@@ -237,6 +255,7 @@ def postGateway() {
                 sendEvent(isChild, [name: "rssi", value: b.rssi, descriptionText: "RSSI value set"])
                 sendEvent(isChild, [name: "power", value: b.power, descriptionText: "Power value set"])
                 sendEvent(isChild, [name: "distance", value: b.distance, descriptionText: "Distance value set"])
+                sendEvent(isChild, [name: "depCheck", value: 0, descriptionText: "depCheck set"])
             }
     	}
         if(isChild || b.present) {
@@ -330,7 +349,7 @@ def setBeaconData(obj) {
 
 def getDistanceInFeet(measuredPower, rssi) {
     def ratio_db = measuredPower - rssi
-    def dBm = 2 //environment value (2-4)
+    def dBm = envValue ?: 2 //environment value (2-4)
     def meters = Math.pow(10, ratio_db / (10*dBm))
     return meters * 3.28084 // convert to feet
 }

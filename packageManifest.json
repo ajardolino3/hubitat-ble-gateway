@@ -1,7 +1,7 @@
 {
   "packageName": "BLE Gateway Manager",
   "author": "Art Ardolino",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "minimumHEVersion": "2.3.0",
   "dateReleased": "2023-02-02",
   "apps": [
