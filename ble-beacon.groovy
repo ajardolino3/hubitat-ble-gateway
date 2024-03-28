@@ -1,10 +1,10 @@
 import groovy.json.*
 
-def deviceVersion() { return "1.3.1" }
+def deviceVersion() { return "1.4.2" }
 
 metadata {
 	definition (
-        name: "BLE Beacon Modified", 
+        name: "BLE Beacon", 
         namespace: "ajardolino3", 
         author: "Art Ardolino")
     {

@@ -1,6 +1,6 @@
 import groovy.json.*
 
-def appVersion() { return "1.4.1" }
+def appVersion() { return "1.4.2" }
 
 definition(
 	name: "BLE Gateway Manager",
@@ -94,7 +94,7 @@ def addBeaconStatusPage() {
             success = true
         }
         catch(exception) {
-            error = exception
+            err = exception
         }
     }
     if(success) {

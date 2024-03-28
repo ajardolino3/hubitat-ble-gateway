@@ -1,6 +1,6 @@
 import groovy.json.*
 
-def deviceVersion() { return "1.3.0" }
+def deviceVersion() { return "1.4.2" }
 
 metadata {
 	definition (
