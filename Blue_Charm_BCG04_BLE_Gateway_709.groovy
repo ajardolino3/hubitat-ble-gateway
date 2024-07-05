@@ -1,12 +1,12 @@
 import groovy.json.*
 
-def deviceVersion() { return "1.4.2" }
+def deviceVersion() { return "1.0.0" }
 
 metadata {
 	definition (
         name: "Blue Charm BCG04 BLE Gateway", 
         namespace: "skotman01", 
-        author: "Scott Heath", 
+        author: "skotman01", 
         singleThreaded: true)  // important: required so gateway manager and gateway driver can communicate with each other 
     {
         capability "PresenceSensor"
