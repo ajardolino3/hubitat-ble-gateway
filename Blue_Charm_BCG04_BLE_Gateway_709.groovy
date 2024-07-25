@@ -23,7 +23,7 @@ def parsePayload(payload) {
     def obj = [:]
     obj.beacons = []
 
-//    def allbeacons = []
+    def allbeacons = []
     parsed.obj.each{ device ->
         def type = device.type
         def b = [:]
@@ -34,7 +34,8 @@ def parsePayload(payload) {
             b.uuid = device.uuid
             b.major = device.majorID
             b.minor = device.minorID
-//            logDebug(device)
+            b.power = device.refpower
+           logDebug(device)
         }
         else
         {
