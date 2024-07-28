@@ -5,7 +5,7 @@ def deviceVersion() { return "1.4.2" }
 metadata {
 	definition (
         name: "Blue Charm BCG04 BLE Gateway", 
-        namespace: "skotman01", 
+        namespace: "ajardolino3", 
         author: "Scott Heath", 
         singleThreaded: true)  // important: required so gateway manager and gateway driver can communicate with each other 
     {
