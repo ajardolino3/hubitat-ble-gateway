@@ -209,7 +209,9 @@ def postGateway() {
             b.detected = detected
             b.rssi = beacon.rssi * -1
             b.distance = beacon.distance
+            if(b.power != null){
             b.power = beacon.power * -1
+            }
             b.type = beacon.type
             state.beacons["${beacon.dni}"] = b
         }
