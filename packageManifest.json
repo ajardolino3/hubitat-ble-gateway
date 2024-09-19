@@ -29,7 +29,7 @@
       "namespace": "ajardolino3",
       "location": "https://raw.githubusercontent.com/ajardolino3/hubitat-ble-gateway/main/Blue_Charm_BCG04_BLE_Gateway_709.groovy",
       "required": false
-    }
+    },
     {
       "id": "296a3d89-a2d7-47f2-a232-9bf4ee5c5aad",
       "name": "BLE Beacon",
