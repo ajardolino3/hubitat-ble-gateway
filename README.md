@@ -16,6 +16,7 @@ people to use the gateway of their choice.
 # What BLE Gateways are Supported?
 
 This app was originally built for the April Brother BLE Gateway (v4) is supported.  You can purchase one here: https://store.aprbrother.com/product/ab-ble-gateway-4-0
+
 Support for the Blue Charm BCG04 Mini-Gateway was added in August 2024.  https://bluecharmbeacons.com/product/bcg04-ble-gateway-beacon-scanner/
 
 Additional gateway drivers can be built as long as the follow the gateway driver specifications (see below).
